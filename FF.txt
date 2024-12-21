@@ -1,0 +1,112 @@
+create table student (
+regno int primary key,
+name varchar2(20),
+major varchar2(20),
+bdate date
+);
+
+create table course (
+course_id varchar2(20) primary key,
+cname varchar2(20),
+dept varchar2(20)
+);
+
+create table enroll (
+regno int,
+course_id varchar2(20),
+sem int,
+marks int,
+foreign key (regno) references student (regno),
+foreign key (course_id) references course (course_id) 
+);
+
+create table textbook (
+book_isbn varchar2(20) primary key,
+book_tittle varchar2(20),
+publisher varchar2(20),
+author varchar2(20)
+);
+
+create table book_adoption (
+course_id varchar2(20),
+sem int,
+book_isbn varchar2(20),
+foreign key (course_id) references course (course_id) ,
+foreign key (book_isbn) references textbook (book_isbn)
+);
+
+insert into student values ('1','azhar','cs','12-feb-2004');
+insert into student values ('2','shaneef','science','31-jan-2000');
+insert into student values ('3','jafar','commerce','12-dec-2002');
+insert into student values ('4','sibtain','physics','12-feb-2005');
+insert into student values ('5','nashil','maths','12-dec-2000');
+
+insert into course values ('c1','bca','computer');
+insert into course values ('c2','bsc','science');
+insert into course values ('c3','bba','business');
+insert into course values ('c4','b com','accountancy');
+insert into course values ('c5','m com','accountancy');
+
+insert into enroll values (1,'c1',6,91);
+insert into enroll values (2,'c2',5,92);
+insert into enroll values (3,'c3',4,95);
+insert into enroll values (4,'c4',3,96);
+insert into enroll values (5,'c5',2,98);
+
+insert into textbook values ('b1','physics','hayaan','akeyas');
+insert into textbook values ('b2','java','sehran','ismail');
+insert into textbook values ('b3','chemistry','hayaan','akeyas');
+insert into textbook values ('b4','python','sehran ','ismail');
+insert into textbook values ('b5','biology','hayaan','akeyas');
+
+insert into book_adoption values ('c1',6,'b1');
+insert into book_adoption values ('c2',5,'b2');
+insert into book_adoption values ('c1',4,'b3');
+insert into book_adoption values ('c2',5,'b4');
+insert into book_adoption values ('c1',4,'b5');
+
+insert into textbook values ('b6','c++','sehran','ismail');
+insert into book_adoption values ('c2',6,'b2');
+
+SELECT course.course_id, book_adoption.book_isbn, textbook.book_tittle
+FROM course, book_adoption, textbook
+WHERE 
+    course.course_id = book_adoption.course_id 
+    AND book_adoption.book_isbn = textbook.book_isbn
+    AND course.course_id IN (
+        SELECT course.course_id
+        FROM course, book_adoption
+        WHERE 
+            course.course_id = book_adoption.course_id 
+            AND dept = 'computer'
+        GROUP BY course.course_id
+        HAVING COUNT(book_adoption.book_isbn) >= 2
+    )
+ORDER BY textbook.book_tittle;
+
+SELECT DISTINCT course.dept
+FROM course,book_adoption,textbook
+where textbook.book_isbn=book_adoption.book_isbn
+and book_adoption.course_id=course.course_id
+and textbook.publisher = 'sehran';
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DECLARE
+    invalid_salary EXCEPTION;
+    salary NUMBER(10,2);        
+BEGIN
+    salary := &salary;      
+    IF salary < 2000 THEN
+        RAISE invalid_salary;  
+    END IF;
+    DBMS_OUTPUT.PUT_LINE('Salary = ' || salary);
+
+EXCEPTION
+    WHEN invalid_salary THEN
+        DBMS_OUTPUT.PUT_LINE('Error: Salary is too low. It must be greater than or equal to 2000');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLERRM);
+END;
+/
